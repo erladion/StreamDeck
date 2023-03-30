@@ -16,11 +16,11 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 set(PROJECT_SOURCES
         main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        streamdeck.cpp
-        streamdeck.h
         resources.qrc
+        mainwindow.h mainwindow.cpp
+        streamdeckinterface.h
+        streamdeck.h streamdeck.cpp
+        deckhandler.h deckhandler.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

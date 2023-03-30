@@ -6,15 +6,16 @@
 
 #include "hidapi/hidapi.h"
 
-namespace StreamDeckMk2 {
-const int Rows = 3;
-const int Columns = 5;
-}  // namespace StreamDeckMk2
+#include "streamdeckinterface.h"
+
+namespace StreamDeckMk2 {}  // namespace StreamDeckMk2
+
+class StreamDeck;
 
 class StreamDeckThread : public QThread {
   Q_OBJECT
  public:
-  StreamDeckThread(hid_device* device);
+  StreamDeckThread(StreamDeck* deck);
 
   void run() override;
  signals:
@@ -22,34 +23,30 @@ class StreamDeckThread : public QThread {
   void buttonReleased(int);
 
  private:
+  StreamDeck* m_deck;
   hid_device* m_device;
 };
 
-class StreamDeck : public QObject {
+class StreamDeck : public StreamDeckInterface {
   Q_OBJECT
 
-  const uint16_t VendorId = 0xfd9;
-  const uint16_t ProductId = 0x80;
-
-  const uint8_t ImageReportId = 0x2;
-  const uint8_t HeaderSize = 8;
-  const uint16_t TotalSize = 1024;
-  const uint16_t PayloadSize = TotalSize - HeaderSize;
-
-  const uint16_t SerialNumberReportId = 0x5;
-  const uint16_t FirmwareReportId = 0x6;
-  const uint16_t ReportSize = 32;
+  friend StreamDeckThread;
 
  public:
-  StreamDeck();
+  StreamDeck(hid_device* device);
 
-  void setKeyImage(uint8_t keyId, const QImage& image);
+  virtual void setKeyImage(uint8_t keyId, const QImage& image) override;
+
+  virtual void setBrightness(double percent) override;
+  virtual void reset() override;
+
+  virtual int getRows() override { return Rows; }
+  virtual int getColums() override { return Columns; }
+
+  virtual QSize imageSize() override;
 
  private:
   StreamDeckThread* m_thread;
-
-  QString m_serialNumber;
-  QString m_firmwareVersion;
 
   hid_device* m_device;
 };
