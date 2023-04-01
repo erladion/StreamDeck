@@ -1,0 +1,28 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file alias="correct.png">resources/correct.png</file>
+        <file alias="arrow.png">resources/arrow.png</file>
+        <file alias="compass.png">resources/compass.svg</file>
+        <file alias="navigation.png">resources/navigation.png</file>
+        <file alias="nav1.png">resources/navigation(1).png</file>
+        <file alias="placehonder.png">resources/placeholder.png</file>
+        <file alias="vector.png">resources/vector.png</file>
+        <file alias="world.png">resources/worldwide.png</file>
+    </qresource>
+    <qresource prefix="/navigation">
+        <file alias="down-arrow.png">resources/arrow-down.png</file>
+        <file alias="delete.png">resources/delete-button.png</file>
+        <file alias="down.png">resources/down-arrow.png</file>
+        <file alias="left.png">resources/left-arrow.png</file>
+        <file alias="left-arrow.png">resources/left-arrow(1).png</file>
+        <file alias="add.png">resources/plus-button.png</file>
+        <file alias="right.png">resources/right-arrow.png</file>
+        <file alias="right-arrow.png">resources/right-arrow(1).png</file>
+        <file alias="up.png">resources/up-arrow.png</file>
+        <file alias="up-arrow.png">resources/up-arrow(1).png</file>
+        <file alias="brightness.png">resources/brightness.png</file>
+        <file alias="eye.png">resources/eye.png</file>
+        <file alias="hidden.png">resources/hidden.png</file>
+        <file alias="brightness24x24.png">resources/brightness24x24.png</file>
+    </qresource>
+</RCC>

@@ -66,7 +66,6 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   QHBoxLayout* mainLayout = new QHBoxLayout();
   QVBoxLayout* blayout = new QVBoxLayout();
   QHBoxLayout* decksLayout = new QHBoxLayout();
-
   QComboBox* decks = new QComboBox();
   decks->setMinimumWidth(150);
   decks->setMaximumWidth(150);
@@ -76,7 +75,6 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 
   QLabel* brightnessIcon = new QLabel();
   QPixmap brightnessPixmap(":/navigation/brightness24x24.png");
-  // brightnessPixmap = brightnessPixmap.scaled(20, 24);
   brightnessIcon->setPixmap(brightnessPixmap);
   QSlider* brightnessSlider = new QSlider(Qt::Horizontal);
   brightnessSlider->setMinimum(0);
