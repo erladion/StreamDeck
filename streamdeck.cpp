@@ -15,8 +15,8 @@ static const int POLL_RATE = 30;
 
 static const unsigned int MICROSECONDS_PER_SECOND = 1000000;
 
-StreamDeck::StreamDeck(hid_device* device) : m_device(device) {
-  m_pageCount = 1;
+StreamDeck::StreamDeck(hid_device* device, const QString& serialNumber) : m_device(device) {
+  SerialNumber = serialNumber;
 
   // Setup all interface variables
   ProductId = 0x80;
@@ -51,9 +51,11 @@ StreamDeck::StreamDeck(hid_device* device) : m_device(device) {
   hid_get_product_string(m_device, wstr, MAX_STR);
   Product = QString::fromWCharArray(wstr);
 
-  QByteArray* serialNumberbuffer = new QByteArray(ReportSize, FirmwareReportId);
-  hid_get_feature_report(m_device, reinterpret_cast<unsigned char*>(serialNumberbuffer->data()), ReportSize);
-  SerialNumber = QString(serialNumberbuffer->data()).mid(2);
+  if (!SerialNumber.isNull()) {
+    QByteArray* serialNumberbuffer = new QByteArray(ReportSize, FirmwareReportId);
+    hid_get_feature_report(m_device, reinterpret_cast<unsigned char*>(serialNumberbuffer->data()), ReportSize);
+    SerialNumber = QString(serialNumberbuffer->data()).mid(2);
+  }
 
   QByteArray* firmwareVersionBuffer = new QByteArray(ReportSize, SerialNumberReportId);
   hid_get_feature_report(m_device, reinterpret_cast<unsigned char*>(firmwareVersionBuffer->data()), ReportSize);

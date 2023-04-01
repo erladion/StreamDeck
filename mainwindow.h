@@ -8,6 +8,7 @@
 #include <QMouseEvent>
 #include <QPushButton>
 
+#include "configurationhandler.h"
 #include "streamdeckinterface.h"
 
 class DeckHandler;
@@ -18,7 +19,7 @@ class QMenu;
 class ImageSelectionDialog : public QDialog {
   Q_OBJECT
  public:
-  ImageSelectionDialog();
+  ImageSelectionDialog(QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 
   QString getImagePath() { return imagePath; }
 
@@ -64,12 +65,16 @@ class MainWindow : public QMainWindow {
   void updateLabel(const QString& text);
 
   void setImage();
+  void adjustBrightness(int value);
 
  private:
   DeckHandler* m_pDeckHandler;
+  ConfigurationHandler* m_pConfigHandler;
 
   QLabel* m_pPageCountLabel;
 
   QHash<StreamDeckInterface*, QMap<int, QButtonGroup*>> m_buttonGroups;
+
+  StreamDeckInterface* m_pCurrentDeck;
 };
 #endif  // MAINWINDOW_H

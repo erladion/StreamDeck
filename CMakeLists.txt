@@ -21,6 +21,7 @@ set(PROJECT_SOURCES
         streamdeckinterface.h
         streamdeck.h streamdeck.cpp
         deckhandler.h deckhandler.cpp
+        configurationhandler.h configurationhandler.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

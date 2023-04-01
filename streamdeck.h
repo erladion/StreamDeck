@@ -33,7 +33,7 @@ class StreamDeck : public StreamDeckInterface {
   friend StreamDeckThread;
 
  public:
-  StreamDeck(hid_device* device);
+  StreamDeck(hid_device* device, const QString& serialNumber = QString());
 
   virtual void setKeyImage(uint8_t keyId, const QImage& image) override;
 

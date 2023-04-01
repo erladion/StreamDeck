@@ -3,6 +3,10 @@
 
 #include <QObject>
 
+namespace ProductIds {
+static const uint16_t Mk2 = 0x80;
+}
+
 class StreamDeckInterface : public QObject {
   Q_OBJECT
  public:
@@ -22,9 +26,6 @@ class StreamDeckInterface : public QObject {
   virtual int getColums() = 0;
 
   virtual QSize imageSize() = 0;
-
-  virtual void addPage() { m_pageCount++; };
-  virtual int pageCount() { return m_pageCount; }
 
  protected:
   uint16_t ProductId;
@@ -47,8 +48,6 @@ class StreamDeckInterface : public QObject {
   uint8_t ReportSize;
 
   uint8_t ButtonStateHeaderSize;
-
-  int m_pageCount;
 };
 
 #endif  // STREAMDECKINTERFACE_H

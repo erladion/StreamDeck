@@ -4,12 +4,13 @@
 #include <QDir>
 #include <QLabel>
 #include <QMenu>
+#include <QSlider>
 #include <QStackedWidget>
 #include <QTreeWidget>
 
 #include "deckhandler.h"
 
-ImageSelectionDialog::ImageSelectionDialog() {
+ImageSelectionDialog::ImageSelectionDialog(QWidget* parent, Qt::WindowFlags f) : QDialog(parent, f) {
   imagePath = "";
   mainLayout = new QGridLayout();
 
@@ -30,7 +31,6 @@ ImageSelectionDialog::ImageSelectionDialog() {
 void ImageSelectionDialog::setReturnImage() {
   int index = mainLayout->indexOf(qobject_cast<QPushButton*>(sender()));
 
-  qWarning() << index;
   imagePath = imagePaths.value(index);
   accept();
 }
@@ -45,8 +45,6 @@ void DeckButton::showContextMenu(const QPoint& pos) {
 DeckButton::DeckButton(QWidget* parent) : QPushButton(parent) {}
 
 void DeckButton::contextMenuEvent(QContextMenuEvent* event) {
-  qWarning() << event->globalPos();
-
   showContextMenu(event->globalPos());
   QPushButton::contextMenuEvent(event);
 }
@@ -55,6 +53,13 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   setWindowTitle("Streamdeck");
 
   m_pDeckHandler = new DeckHandler();
+  m_pConfigHandler = new ConfigurationHandler();
+
+  Configuration config;
+  config.name = "StreamDeckTest";
+  m_pConfigHandler->saveConfiguration(config);
+
+  m_pConfigHandler->loadConfigurations();
 
   QWidget* centralWidget = new QWidget(this);
 
@@ -68,6 +73,18 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   decksLayout->setContentsMargins(20, 0, 20, 0);
   decksLayout->addWidget(decks);
   decksLayout->addStretch();
+
+  QLabel* brightnessIcon = new QLabel();
+  QPixmap brightnessPixmap(":/navigation/brightness24x24.png");
+  // brightnessPixmap = brightnessPixmap.scaled(20, 24);
+  brightnessIcon->setPixmap(brightnessPixmap);
+  QSlider* brightnessSlider = new QSlider(Qt::Horizontal);
+  brightnessSlider->setMinimum(0);
+  brightnessSlider->setMaximum(100);
+  connect(brightnessSlider, &QSlider::valueChanged, this, &MainWindow::adjustBrightness);
+  decksLayout->addWidget(brightnessIcon);
+  decksLayout->addWidget(brightnessSlider);
+
   blayout->addLayout(decksLayout);
 
   QStackedWidget* deckButtons = new QStackedWidget();
@@ -107,6 +124,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   pageLayout->addWidget(nextPageButton);
   pageLayout->addWidget(addPageButton);
 
+  QGridLayout* actionInfoLayout = new QGridLayout();
+
   QTreeWidget* tw = new QTreeWidget(this);
   tw->setHeaderHidden(true);
   tw->setMinimumWidth(300);
@@ -114,6 +133,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   blayout->addWidget(deckButtons);
   blayout->addLayout(pageLayout);
   blayout->addStretch();
+  blayout->addLayout(actionInfoLayout);
 
   mainLayout->addLayout(blayout);
   mainLayout->addWidget(tw);
@@ -153,7 +173,10 @@ QWidget* MainWindow::createDeckButtons(StreamDeckInterface* deck) {
 void MainWindow::deviceChanged(int index) {
   QList<StreamDeckInterface*> devices = m_pDeckHandler->devices();
 
-  updateLabel(QString("1/%0").arg(devices.value(index)->pageCount()));
+  m_pCurrentDeck = devices.value(index);
+
+  Configuration config = m_pConfigHandler->currentConfiguration(m_pCurrentDeck);
+  updateLabel(QString("1/%0").arg(config.pageCount));
 }
 
 void MainWindow::updateLabel(const QString& text) {
@@ -163,15 +186,22 @@ void MainWindow::updateLabel(const QString& text) {
 void MainWindow::setImage() {
   DeckButton* button = qobject_cast<DeckButton*>(sender());
 
-  int id = m_buttonGroups.value(m_pDeckHandler->devices().first()).value(1)->id(button);
-  ImageSelectionDialog* dialog = new ImageSelectionDialog();
+  int id = m_buttonGroups.value(m_pCurrentDeck).value(1)->id(button);
+  ImageSelectionDialog* dialog = new ImageSelectionDialog(this, Qt::Dialog);
+  dialog->setModal(true);
   QString image;
   if (dialog->exec() == QDialog::Accepted) {
     image = dialog->getImagePath();
   }
 
-  m_pDeckHandler->devices().first()->setKeyImage(id, QImage(image));
-  QPixmap p;
-  p.convertFromImage(QImage(image));
-  button->setIcon(QIcon(p));
+  if (!image.isNull()) {
+    m_pCurrentDeck->setKeyImage(id, QImage(image));
+    QPixmap p;
+    p.convertFromImage(QImage(image));
+    button->setIcon(QIcon(p));
+  }
+}
+
+void MainWindow::adjustBrightness(int value) {
+  m_pCurrentDeck->setBrightness(value);
 }
