@@ -25,4 +25,10 @@
         <file alias="hidden.png">resources/hidden.png</file>
         <file alias="brightness24x24.png">resources/brightness24x24.png</file>
     </qresource>
+    <qresource prefix="/actions">
+        <file alias="next-page.png">resources/arrow-right.png</file>
+        <file alias="previous-page.png">resources/left.png</file>
+        <file alias="brightness-increase.png">resources/light.png</file>
+        <file alias="brightness-decrease.png">resources/light(1).png</file>
+    </qresource>
 </RCC>

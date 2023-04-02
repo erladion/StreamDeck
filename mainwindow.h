@@ -2,12 +2,11 @@
 #define MAINWINDOW_H
 
 #include <QButtonGroup>
-#include <QDialog>
-#include <QGridLayout>
 #include <QMainWindow>
-#include <QMouseEvent>
-#include <QPushButton>
 
+#include <QStyledItemDelegate>
+
+#include "action.h"
 #include "configurationhandler.h"
 #include "streamdeckinterface.h"
 
@@ -15,41 +14,23 @@ class DeckHandler;
 
 class QLabel;
 class QMenu;
+class QTreeWidget;
+class QTreeWidgetItem;
 
-class ImageSelectionDialog : public QDialog {
-  Q_OBJECT
+class TreeItemDelegate : public QStyledItemDelegate {
  public:
-  ImageSelectionDialog(QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+  TreeItemDelegate(int height, QObject* parent = nullptr) : QStyledItemDelegate(parent), m_height(height) {}
 
-  QString getImagePath() { return imagePath; }
-
- public slots:
-  void setReturnImage();
+  QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override {
+    QSize size = QStyledItemDelegate::sizeHint(option, index);
+    if (m_height) {
+      size.setHeight(m_height);
+    }
+    return size;
+  }
 
  private:
-  QGridLayout* mainLayout;
-
-  QList<QString> imagePaths;
-
-  QString imagePath;
-};
-
-class DeckButton : public QPushButton {
-  Q_OBJECT
- public:
-  DeckButton(QWidget* parent = nullptr);
-
- signals:
-  void setImage();
-
- public slots:
-  void showContextMenu(const QPoint& pos);
-
- protected:
-  void contextMenuEvent(QContextMenuEvent* event) override;
-
- private:
-  QMenu* contextMenu;
+  int m_height;
 };
 
 class MainWindow : public QMainWindow {
@@ -66,8 +47,13 @@ class MainWindow : public QMainWindow {
 
   void setImage();
   void adjustBrightness(int value);
+  void showActionInfo();
 
  private:
+  void createActionItem(Action* action, QTreeWidgetItem*);
+
+  void createBaseActions();
+
   DeckHandler* m_pDeckHandler;
   ConfigurationHandler* m_pConfigHandler;
 
@@ -76,5 +62,7 @@ class MainWindow : public QMainWindow {
   QHash<StreamDeckInterface*, QMap<int, QButtonGroup*>> m_buttonGroups;
 
   StreamDeckInterface* m_pCurrentDeck;
+
+  QTreeWidget* m_pActionTree;
 };
 #endif  // MAINWINDOW_H

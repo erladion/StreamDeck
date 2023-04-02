@@ -1,65 +1,30 @@
 #include "mainwindow.h"
 
 #include <QComboBox>
-#include <QDir>
+#include <QHBoxLayout>
 #include <QLabel>
-#include <QMenu>
 #include <QSlider>
 #include <QStackedWidget>
 #include <QTreeWidget>
+#include <QVBoxLayout>
 
+#include "brightnessaction.h"
+#include "deckbutton.h"
 #include "deckhandler.h"
+#include "imageselectiondialog.h"
 
-ImageSelectionDialog::ImageSelectionDialog(QWidget* parent, Qt::WindowFlags f) : QDialog(parent, f) {
-  imagePath = "";
-  mainLayout = new QGridLayout();
-
-  int count = 0;
-  for (const QString& image : QDir(":/icons/").entryList()) {
-    QString path = ":/icons/" + image;
-    QPushButton* button = new QPushButton(QIcon(path), "");
-    connect(button, &QPushButton::clicked, this, &ImageSelectionDialog::setReturnImage);
-    button->setFlat(true);
-
-    imagePaths.append(path);
-    mainLayout->addWidget(button, count / 10, count++);
-  }
-
-  setLayout(mainLayout);
-}
-
-void ImageSelectionDialog::setReturnImage() {
-  int index = mainLayout->indexOf(qobject_cast<QPushButton*>(sender()));
-
-  imagePath = imagePaths.value(index);
-  accept();
-}
-
-void DeckButton::showContextMenu(const QPoint& pos) {
-  QMenu* menu = new QMenu;
-  QAction* imageAction = menu->addAction("Set image");
-  connect(imageAction, &QAction::triggered, this, &DeckButton::setImage);
-  menu->exec(pos);
-}
-
-DeckButton::DeckButton(QWidget* parent) : QPushButton(parent) {}
-
-void DeckButton::contextMenuEvent(QContextMenuEvent* event) {
-  showContextMenu(event->globalPos());
-  QPushButton::contextMenuEvent(event);
-}
+static const int ActionRole = Qt::UserRole + 1;
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   setWindowTitle("Streamdeck");
 
   m_pDeckHandler = new DeckHandler();
   m_pConfigHandler = new ConfigurationHandler();
-
-  Configuration config;
-  config.name = "StreamDeckTest";
-  m_pConfigHandler->saveConfiguration(config);
-
   m_pConfigHandler->loadConfigurations();
+
+  // Configuration config;
+  // config.name = "StreamDeckTest";
+  // m_pConfigHandler->saveConfiguration(config);
 
   QWidget* centralWidget = new QWidget(this);
 
@@ -74,11 +39,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   decksLayout->addStretch();
 
   QLabel* brightnessIcon = new QLabel();
-  QPixmap brightnessPixmap(":/navigation/brightness24x24.png");
-  brightnessIcon->setPixmap(brightnessPixmap);
+  brightnessIcon->setPixmap(QPixmap(":/navigation/brightness24x24.png"));
   QSlider* brightnessSlider = new QSlider(Qt::Horizontal);
-  brightnessSlider->setMinimum(0);
-  brightnessSlider->setMaximum(100);
+  brightnessSlider->setRange(0, 100);
   connect(brightnessSlider, &QSlider::valueChanged, this, &MainWindow::adjustBrightness);
   decksLayout->addWidget(brightnessIcon);
   decksLayout->addWidget(brightnessSlider);
@@ -124,9 +87,13 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 
   QGridLayout* actionInfoLayout = new QGridLayout();
 
-  QTreeWidget* tw = new QTreeWidget(this);
-  tw->setHeaderHidden(true);
-  tw->setMinimumWidth(300);
+  m_pActionTree = new QTreeWidget(this);
+  m_pActionTree->setHeaderHidden(true);
+  m_pActionTree->setMinimumWidth(300);
+  m_pActionTree->setItemDelegate(new TreeItemDelegate(30));
+  m_pActionTree->setRootIsDecorated(false);
+  m_pActionTree->setDragEnabled(true);
+  m_pActionTree->setDragDropMode(QAbstractItemView::DragOnly);
 
   blayout->addWidget(deckButtons);
   blayout->addLayout(pageLayout);
@@ -134,10 +101,13 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   blayout->addLayout(actionInfoLayout);
 
   mainLayout->addLayout(blayout);
-  mainLayout->addWidget(tw);
+  mainLayout->addWidget(m_pActionTree);
 
   centralWidget->setLayout(mainLayout);
   setCentralWidget(centralWidget);
+
+  createBaseActions();
+  m_pActionTree->expandAll();
 }
 
 MainWindow::~MainWindow() {}
@@ -150,13 +120,11 @@ QWidget* MainWindow::createDeckButtons(StreamDeckInterface* deck) {
   int count = 0;
   for (int row(0); row < deck->getRows(); ++row) {
     for (int column(0); column < deck->getColums(); ++column) {
-      DeckButton* button = new DeckButton();
+      DeckButton* button = new DeckButton(deck->imageSize());
       connect(button, &DeckButton::setImage, this, &MainWindow::setImage);
-      button->setMinimumSize(deck->imageSize());
-      button->setMaximumSize(deck->imageSize());
+      connect(button, &DeckButton::clicked, this, &MainWindow::showActionInfo);
 
       buttonLayout->addWidget(button, row, column);
-
       buttonGroup->addButton(button, count++);
     }
   }
@@ -202,4 +170,23 @@ void MainWindow::setImage() {
 
 void MainWindow::adjustBrightness(int value) {
   m_pCurrentDeck->setBrightness(value);
+}
+
+void MainWindow::showActionInfo() {}
+
+void MainWindow::createActionItem(Action* action, QTreeWidgetItem* parent) {
+  QTreeWidgetItem* item = new QTreeWidgetItem(parent, QStringList() << action->name());
+  item->setData(0, ActionRole, QVariant::fromValue(action));
+  item->setIcon(0, QPixmap::fromImage(action->image()));
+}
+
+void MainWindow::createBaseActions() {
+  QTreeWidgetItem* brightnessItem = new QTreeWidgetItem(QStringList() << "Brightness");
+  Action* increaseBrightnessAction = new BrightnessAction("Increase", 10, QImage(":/actions/brightness-increase.png"));
+  Action* decreaseBrightnessAction = new BrightnessAction("Decrease", 10, QImage(":/actions/brightness-decrease.png"));
+  createActionItem(increaseBrightnessAction, brightnessItem);
+  createActionItem(decreaseBrightnessAction, brightnessItem);
+
+  QTreeWidgetItem* root = m_pActionTree->invisibleRootItem();
+  root->addChild(brightnessItem);
 }
