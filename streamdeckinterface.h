@@ -27,6 +27,10 @@ class StreamDeckInterface : public QObject {
 
   virtual QSize imageSize() = 0;
 
+ signals:
+  void buttonPressed(int);
+  void buttonReleased(int);
+
  protected:
   uint16_t ProductId;
 

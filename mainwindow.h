@@ -45,9 +45,14 @@ class MainWindow : public QMainWindow {
   void deviceChanged(int index);
   void updateLabel(const QString& text);
 
-  void setImage();
+  void showImageSelection();
   void adjustBrightness(int value);
   void showActionInfo();
+
+  void deletePage();
+  void previousPage();
+  void nextPage();
+  void addPage();
 
  private:
   void createActionItem(Action* action, QTreeWidgetItem*);

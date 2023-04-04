@@ -68,6 +68,9 @@ StreamDeck::StreamDeck(hid_device* device, const QString& serialNumber) : m_devi
   connect(m_thread, &StreamDeckThread::buttonReleased, this,
           [this](int buttonId) { qInfo("Button released: %d", buttonId); });
 
+  connect(m_thread, &StreamDeckThread::buttonPressed, this, &StreamDeck::buttonPressed);
+  connect(m_thread, &StreamDeckThread::buttonReleased, this, &StreamDeck::buttonReleased);
+
   m_thread->start();
 }
 

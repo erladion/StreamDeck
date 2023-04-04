@@ -13,8 +13,6 @@
 #include "deckhandler.h"
 #include "imageselectiondialog.h"
 
-static const int ActionRole = Qt::UserRole + 1;
-
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   setWindowTitle("Streamdeck");
 
@@ -64,19 +62,22 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   deletePageButton->setFlat(true);
   deletePageButton->setMaximumSize(QSize(25, 25));
   deletePageButton->setMinimumSize(QSize(25, 25));
-
+  connect(deletePageButton, &QPushButton::clicked, this, &MainWindow::deletePage);
   QPushButton* previousPageButton = new QPushButton(QIcon(":/navigation/left.png"), "");
   previousPageButton->setFlat(true);
   previousPageButton->setMaximumSize(QSize(25, 25));
   previousPageButton->setMinimumSize(QSize(25, 25));
+  connect(previousPageButton, &QPushButton::clicked, this, &MainWindow::previousPage);
   QPushButton* nextPageButton = new QPushButton(QIcon(":/navigation/right.png"), "");
   nextPageButton->setFlat(true);
   nextPageButton->setMaximumSize(QSize(25, 25));
   nextPageButton->setMinimumSize(QSize(25, 25));
+  connect(nextPageButton, &QPushButton::clicked, this, &MainWindow::nextPage);
   QPushButton* addPageButton = new QPushButton(QIcon(":/navigation/add.png"), "");
   addPageButton->setFlat(true);
   addPageButton->setMaximumSize(QSize(25, 25));
   addPageButton->setMinimumSize(QSize(25, 25));
+  connect(addPageButton, &QPushButton::clicked, this, &MainWindow::addPage);
 
   pageLayout->setAlignment(Qt::AlignHCenter);
   pageLayout->addWidget(deletePageButton);
@@ -120,8 +121,8 @@ QWidget* MainWindow::createDeckButtons(StreamDeckInterface* deck) {
   int count = 0;
   for (int row(0); row < deck->getRows(); ++row) {
     for (int column(0); column < deck->getColums(); ++column) {
-      DeckButton* button = new DeckButton(deck->imageSize());
-      connect(button, &DeckButton::setImage, this, &MainWindow::setImage);
+      DeckButton* button = new DeckButton(deck, row * 5 + column, deck->imageSize());
+      connect(button, &DeckButton::showImageSelection, this, &MainWindow::showImageSelection);
       connect(button, &DeckButton::clicked, this, &MainWindow::showActionInfo);
 
       buttonLayout->addWidget(button, row, column);
@@ -149,22 +150,17 @@ void MainWindow::updateLabel(const QString& text) {
   m_pPageCountLabel->setText(text);
 }
 
-void MainWindow::setImage() {
+void MainWindow::showImageSelection() {
   DeckButton* button = qobject_cast<DeckButton*>(sender());
 
-  int id = m_buttonGroups.value(m_pCurrentDeck).value(1)->id(button);
   ImageSelectionDialog* dialog = new ImageSelectionDialog(this, Qt::Dialog);
-  dialog->setModal(true);
   QString image;
   if (dialog->exec() == QDialog::Accepted) {
     image = dialog->getImagePath();
   }
 
   if (!image.isNull()) {
-    m_pCurrentDeck->setKeyImage(id, QImage(image));
-    QPixmap p;
-    p.convertFromImage(QImage(image));
-    button->setIcon(QIcon(p));
+    button->setImage(QImage(image));
   }
 }
 
@@ -172,11 +168,29 @@ void MainWindow::adjustBrightness(int value) {
   m_pCurrentDeck->setBrightness(value);
 }
 
-void MainWindow::showActionInfo() {}
+void MainWindow::showActionInfo() {
+  // TODO: Implement
+}
+
+void MainWindow::deletePage() {
+  // TODO: Implement
+}
+
+void MainWindow::previousPage() {
+  // TODO: Implement
+}
+
+void MainWindow::nextPage() {
+  // TODO: Implement
+}
+
+void MainWindow::addPage() {
+  // TODO: Implement
+}
 
 void MainWindow::createActionItem(Action* action, QTreeWidgetItem* parent) {
   QTreeWidgetItem* item = new QTreeWidgetItem(parent, QStringList() << action->name());
-  item->setData(0, ActionRole, QVariant::fromValue(action));
+  item->setData(0, Action::ActionRole, QVariant::fromValue(reinterpret_cast<quintptr>(action)));
   item->setIcon(0, QPixmap::fromImage(action->image()));
 }
 

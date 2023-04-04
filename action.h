@@ -15,8 +15,12 @@ class Action : public QObject {
 
   ~Action() {}
 
+  virtual void execute() = 0;
+
   QString name() { return m_name; }
   QImage image() { return m_image; }
+
+  static const int ActionRole;
 
  protected:
   QString m_name;

@@ -3,6 +3,8 @@
 #include <QImage>
 #include <QString>
 
+const int Action::ActionRole = Qt::UserRole + 1;
+
 Action::Action() {}
 
 Action::Action(const Action& other) {

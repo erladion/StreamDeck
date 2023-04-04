@@ -22,6 +22,8 @@ class BrightnessAction : public Action {
     m_pDeck = deck;
   }
 
+  void execute() override;
+
  private:
   void swap(BrightnessAction& other);
 

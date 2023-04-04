@@ -21,6 +21,7 @@ ImageSelectionDialog::ImageSelectionDialog(QWidget* parent, Qt::WindowFlags f) :
   }
 
   setLayout(mainLayout);
+  setModal(true);
 }
 
 void ImageSelectionDialog::setReturnImage() {

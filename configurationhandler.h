@@ -14,16 +14,16 @@ class Configuration : public QObject {
   Configuration();
   Configuration(const Configuration& other);
 
-  void swap(Configuration& other);
-
   Configuration& operator=(const Configuration& other);
 
   QJsonObject toJson();
-
   static Configuration fromJson(QJsonObject obj);
 
   QString name;
   int pageCount;
+
+ private:
+  void swap(Configuration& other);
 };
 
 class ConfigurationHandler : public QObject {

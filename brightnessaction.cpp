@@ -30,3 +30,5 @@ void BrightnessAction::swap(BrightnessAction& other) {
   std::swap(m_value, other.m_value);
   std::swap(m_pDeck, other.m_pDeck);
 }
+
+void BrightnessAction::execute() {}
