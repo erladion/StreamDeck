@@ -26,6 +26,7 @@ set(PROJECT_SOURCES
         deckbutton.h deckbutton.cpp
         imageselectiondialog.h imageselectiondialog.cpp
         brightnessaction.h brightnessaction.cpp
+        nextpageaction.h nextpageaction.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

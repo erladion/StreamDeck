@@ -10,12 +10,10 @@
 #include <QDropEvent>
 #include <QMimeData>
 
-DeckButton::DeckButton(StreamDeckInterface* deck, int position, QSize buttonSize, QWidget* parent)
-    : QPushButton(parent), m_pDeck(deck), m_position(position), m_size(buttonSize) {
-  setMinimumSize(m_size);
-  setMaximumSize(m_size);
+DeckButton::DeckButton(int position, QSize buttonSize, QWidget* parent)
+    : QPushButton(parent), m_position(position), m_size(buttonSize) {
+  setFixedSize(m_size);
   setIconSize(m_size / 2);
-
   setAcceptDrops(true);
 }
 
@@ -27,12 +25,9 @@ void DeckButton::showContextMenu(const QPoint& pos) {
 }
 
 void DeckButton::setImage(QImage image) {
-  image.invertPixels();
   QPixmap p;
   p.convertFromImage(image);
   setIcon(QIcon(p));
-
-  m_pDeck->setKeyImage(m_position, image);
 }
 
 void DeckButton::setImage(QIcon icon) {
@@ -60,6 +55,8 @@ void DeckButton::dropEvent(QDropEvent* event) {
   QMap<int, QVariant> roleDataMap;
   stream >> row >> col >> roleDataMap;
 
-  m_pAction = reinterpret_cast<Action*>(roleDataMap.value(Action::ActionRole).value<quintptr>());
+  Action* action = reinterpret_cast<Action*>(roleDataMap.value(Action::ActionRole).value<quintptr>());
   setImage(roleDataMap.value(Qt::DecorationRole).value<QIcon>());
+
+  emit actionAdded(m_position, action);
 }

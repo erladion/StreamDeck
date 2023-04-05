@@ -41,6 +41,10 @@ class MainWindow : public QMainWindow {
 
   QWidget* createDeckButtons(StreamDeckInterface* deck);
 
+ signals:
+  void buttonPressed(int buttonIndex);
+  void buttonReleased(int buttonIndex);
+
  private slots:
   void deviceChanged(int index);
   void updateLabel(const QString& text);
@@ -54,7 +58,11 @@ class MainWindow : public QMainWindow {
   void nextPage();
   void addPage();
 
+  void setAction(int, Action*);
+
  private:
+  static const QSize NavigationButtonsSize;
+
   void createActionItem(Action* action, QTreeWidgetItem*);
 
   void createBaseActions();

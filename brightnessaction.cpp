@@ -1,13 +1,14 @@
 #include "brightnessaction.h"
 
-BrightnessAction::BrightnessAction() : m_pDeck(nullptr) {
+BrightnessAction::BrightnessAction() {
   m_name = QString();
+  m_pDeck = nullptr;
 }
 
-BrightnessAction::BrightnessAction(const QString& name, int value, const QImage& image)
-    : m_value(value), m_pDeck(nullptr) {
+BrightnessAction::BrightnessAction(const QString& name, int value, const QImage& image) : m_value(value) {
   m_name = name;
   m_image = image;
+  m_pDeck = nullptr;
 }
 
 BrightnessAction::BrightnessAction(const BrightnessAction& other) {
@@ -31,4 +32,8 @@ void BrightnessAction::swap(BrightnessAction& other) {
   std::swap(m_pDeck, other.m_pDeck);
 }
 
-void BrightnessAction::execute() {}
+void BrightnessAction::execute() {
+  if (m_pDeck) {
+    m_pDeck->setBrightness(m_value);
+  }
+}

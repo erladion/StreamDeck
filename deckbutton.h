@@ -2,7 +2,6 @@
 #define DECKBUTTON_H
 
 #include "action.h"
-#include "streamdeckinterface.h"
 
 #include <QPushButton>
 
@@ -11,12 +10,11 @@ class QMenu;
 class DeckButton : public QPushButton {
   Q_OBJECT
  public:
-  DeckButton(StreamDeckInterface* deck, int position, QSize buttonSize, QWidget* parent = nullptr);
-
-  void setDeck(StreamDeckInterface* deck) { m_pDeck = deck; }
+  DeckButton(int position, QSize buttonSize, QWidget* parent = nullptr);
 
  signals:
   void showImageSelection();
+  void actionAdded(int, Action*);
 
  public slots:
   void showContextMenu(const QPoint& pos);
@@ -33,10 +31,7 @@ class DeckButton : public QPushButton {
  private:
   QMenu* contextMenu;
 
-  StreamDeckInterface* m_pDeck;
   int m_position;
   QSize m_size;
-
-  Action* m_pAction;
 };
 #endif  // DECKBUTTON_H

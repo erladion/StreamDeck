@@ -3,9 +3,8 @@
 
 #include "action.h"
 
-#include "streamdeckinterface.h"
-
 class BrightnessAction : public Action {
+  Q_OBJECT
  public:
   BrightnessAction();
   BrightnessAction(const QString& name, int value, const QImage& image);
@@ -15,21 +14,12 @@ class BrightnessAction : public Action {
 
   BrightnessAction& operator=(const BrightnessAction& other);
 
-  void setStreamDeck(StreamDeckInterface* deck) {
-    if (deck == nullptr) {
-      return;
-    }
-    m_pDeck = deck;
-  }
-
   void execute() override;
 
  private:
   void swap(BrightnessAction& other);
 
   int m_value;
-
-  StreamDeckInterface* m_pDeck;
 };
 
 #endif  // BRIGHTNESSACTION_H

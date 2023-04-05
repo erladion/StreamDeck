@@ -13,6 +13,8 @@
 #include "deckhandler.h"
 #include "imageselectiondialog.h"
 
+const QSize MainWindow::NavigationButtonsSize = QSize(25, 25);
+
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   setWindowTitle("Streamdeck");
 
@@ -29,21 +31,21 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   QHBoxLayout* mainLayout = new QHBoxLayout();
   QVBoxLayout* blayout = new QVBoxLayout();
   QHBoxLayout* decksLayout = new QHBoxLayout();
+
   QComboBox* decks = new QComboBox();
-  decks->setMinimumWidth(150);
-  decks->setMaximumWidth(150);
-  decksLayout->setContentsMargins(20, 0, 20, 0);
-  decksLayout->addWidget(decks);
-  decksLayout->addStretch();
+  decks->setFixedWidth(150);
 
   QLabel* brightnessIcon = new QLabel();
   brightnessIcon->setPixmap(QPixmap(":/navigation/brightness24x24.png"));
   QSlider* brightnessSlider = new QSlider(Qt::Horizontal);
   brightnessSlider->setRange(0, 100);
   connect(brightnessSlider, &QSlider::valueChanged, this, &MainWindow::adjustBrightness);
+
+  decksLayout->setContentsMargins(20, 0, 20, 0);
+  decksLayout->addWidget(decks);
+  decksLayout->addStretch();
   decksLayout->addWidget(brightnessIcon);
   decksLayout->addWidget(brightnessSlider);
-
   blayout->addLayout(decksLayout);
 
   QStackedWidget* deckButtons = new QStackedWidget();
@@ -53,6 +55,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 
   m_pPageCountLabel = new QLabel("1");
   for (StreamDeckInterface* deck : m_pDeckHandler->devices()) {
+    connect(deck, &StreamDeckInterface::buttonPressed, m_pConfigHandler, &ConfigurationHandler::buttonPressed);
+    connect(deck, &StreamDeckInterface::buttonReleased, m_pConfigHandler, &ConfigurationHandler::buttonReleased);
+
     decks->addItem(deck->Product);
     deckButtons->addWidget(createDeckButtons(deck));
   }
@@ -60,23 +65,19 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   QHBoxLayout* pageLayout = new QHBoxLayout();
   QPushButton* deletePageButton = new QPushButton(QIcon(":/navigation/delete.png"), "");
   deletePageButton->setFlat(true);
-  deletePageButton->setMaximumSize(QSize(25, 25));
-  deletePageButton->setMinimumSize(QSize(25, 25));
+  deletePageButton->setFixedSize(NavigationButtonsSize);
   connect(deletePageButton, &QPushButton::clicked, this, &MainWindow::deletePage);
   QPushButton* previousPageButton = new QPushButton(QIcon(":/navigation/left.png"), "");
   previousPageButton->setFlat(true);
-  previousPageButton->setMaximumSize(QSize(25, 25));
-  previousPageButton->setMinimumSize(QSize(25, 25));
+  previousPageButton->setFixedSize(NavigationButtonsSize);
   connect(previousPageButton, &QPushButton::clicked, this, &MainWindow::previousPage);
   QPushButton* nextPageButton = new QPushButton(QIcon(":/navigation/right.png"), "");
   nextPageButton->setFlat(true);
-  nextPageButton->setMaximumSize(QSize(25, 25));
-  nextPageButton->setMinimumSize(QSize(25, 25));
+  nextPageButton->setFixedSize(NavigationButtonsSize);
   connect(nextPageButton, &QPushButton::clicked, this, &MainWindow::nextPage);
   QPushButton* addPageButton = new QPushButton(QIcon(":/navigation/add.png"), "");
   addPageButton->setFlat(true);
-  addPageButton->setMaximumSize(QSize(25, 25));
-  addPageButton->setMinimumSize(QSize(25, 25));
+  addPageButton->setFixedSize(NavigationButtonsSize);
   connect(addPageButton, &QPushButton::clicked, this, &MainWindow::addPage);
 
   pageLayout->setAlignment(Qt::AlignHCenter);
@@ -121,9 +122,10 @@ QWidget* MainWindow::createDeckButtons(StreamDeckInterface* deck) {
   int count = 0;
   for (int row(0); row < deck->getRows(); ++row) {
     for (int column(0); column < deck->getColums(); ++column) {
-      DeckButton* button = new DeckButton(deck, row * 5 + column, deck->imageSize());
+      DeckButton* button = new DeckButton(row * 5 + column, deck->imageSize());
       connect(button, &DeckButton::showImageSelection, this, &MainWindow::showImageSelection);
       connect(button, &DeckButton::clicked, this, &MainWindow::showActionInfo);
+      connect(button, &DeckButton::actionAdded, this, &MainWindow::setAction);
 
       buttonLayout->addWidget(button, row, column);
       buttonGroup->addButton(button, count++);
@@ -141,8 +143,9 @@ void MainWindow::deviceChanged(int index) {
   QList<StreamDeckInterface*> devices = m_pDeckHandler->devices();
 
   m_pCurrentDeck = devices.value(index);
+  m_pConfigHandler->deviceChanged(m_pCurrentDeck);
 
-  Configuration config = m_pConfigHandler->currentConfiguration(m_pCurrentDeck);
+  Configuration config = m_pConfigHandler->currentConfiguration();
   updateLabel(QString("1/%0").arg(config.pageCount));
 }
 
@@ -165,7 +168,7 @@ void MainWindow::showImageSelection() {
 }
 
 void MainWindow::adjustBrightness(int value) {
-  m_pCurrentDeck->setBrightness(value);
+  m_pConfigHandler->adjustBrightness(value);
 }
 
 void MainWindow::showActionInfo() {
@@ -173,19 +176,24 @@ void MainWindow::showActionInfo() {
 }
 
 void MainWindow::deletePage() {
-  // TODO: Implement
+  m_pConfigHandler->deletePage();
 }
 
 void MainWindow::previousPage() {
-  // TODO: Implement
+  m_pConfigHandler->previousPage();
 }
 
 void MainWindow::nextPage() {
-  // TODO: Implement
+  m_pConfigHandler->nextPage();
 }
 
 void MainWindow::addPage() {
-  // TODO: Implement
+  m_pConfigHandler->addPage();
+}
+
+void MainWindow::setAction(int index, Action* action) {
+  qWarning() << __PRETTY_FUNCTION__;
+  m_pConfigHandler->setAction(index, action, m_pCurrentDeck);
 }
 
 void MainWindow::createActionItem(Action* action, QTreeWidgetItem* parent) {
@@ -196,8 +204,13 @@ void MainWindow::createActionItem(Action* action, QTreeWidgetItem* parent) {
 
 void MainWindow::createBaseActions() {
   QTreeWidgetItem* brightnessItem = new QTreeWidgetItem(QStringList() << "Brightness");
-  Action* increaseBrightnessAction = new BrightnessAction("Increase", 10, QImage(":/actions/brightness-increase.png"));
-  Action* decreaseBrightnessAction = new BrightnessAction("Decrease", 10, QImage(":/actions/brightness-decrease.png"));
+  QImage image(":/actions/brightness-increase.png");
+  image.invertPixels();
+  Action* increaseBrightnessAction = new BrightnessAction("Increase", 10, image);
+  increaseBrightnessAction->setStreamDeck(m_pCurrentDeck);
+  image = QImage(":/actions/brightness-decrease.png");
+  image.invertPixels();
+  Action* decreaseBrightnessAction = new BrightnessAction("Decrease", -10, image);
   createActionItem(increaseBrightnessAction, brightnessItem);
   createActionItem(decreaseBrightnessAction, brightnessItem);
 

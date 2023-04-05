@@ -1,6 +1,7 @@
 #ifndef CONFIGURATIONHANDLER_H
 #define CONFIGURATIONHANDLER_H
 
+#include "action.h"
 #include "streamdeckinterface.h"
 
 #include <QHash>
@@ -19,11 +20,19 @@ class Configuration : public QObject {
   QJsonObject toJson();
   static Configuration fromJson(QJsonObject obj);
 
+  void addPage();
+  void deletePage(int index);
+
+  void addAction(int buttonIndex, int pageIndex, Action* action);
+
   QString name;
   int pageCount;
+  int brightness;
 
  private:
   void swap(Configuration& other);
+
+  QList<QList<Action*>> m_actions;
 };
 
 class ConfigurationHandler : public QObject {
@@ -34,9 +43,27 @@ class ConfigurationHandler : public QObject {
   void loadConfigurations();
   void saveConfiguration(Configuration config);
 
-  Configuration currentConfiguration(StreamDeckInterface* deck) { return m_configurations.value(deck); }
+  void deviceChanged(StreamDeckInterface* deck);
+  Configuration currentConfiguration() { return m_currentConfiguration; }
+
+  void addPage();
+  void deletePage();
+  void nextPage();
+  void previousPage();
+
+  void adjustBrightness(int value);
+
+  void setAction(int buttonIndex, Action* action, StreamDeckInterface* deck);
+
+ public slots:
+  void buttonPressed(int buttonIndex);
+  void buttonReleased(int buttonIndex);
 
  private:
+  StreamDeckInterface* m_pCurrentDeck;
+  Configuration m_currentConfiguration;
+  int m_currentPage;
+
   QList<Configuration> configurations;
 
   QHash<StreamDeckInterface*, Configuration> m_configurations;
