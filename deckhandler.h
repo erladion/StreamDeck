@@ -3,6 +3,8 @@
 
 #include <QObject>
 
+#include <QSet>
+
 #include "streamdeckinterface.h"
 
 class DeckHandler : public QObject {

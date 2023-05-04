@@ -60,6 +60,11 @@ class MainWindow : public QMainWindow {
 
   void setAction(int, Action*);
 
+ private slots:
+  void updatePageLabel(int currentPage, int pageCount);
+
+  void updatePage(QList<Action*> actions, int currentPage);
+
  private:
   static const QSize NavigationButtonsSize;
 
@@ -72,7 +77,7 @@ class MainWindow : public QMainWindow {
 
   QLabel* m_pPageCountLabel;
 
-  QHash<StreamDeckInterface*, QMap<int, QButtonGroup*>> m_buttonGroups;
+  QButtonGroup* m_pButtonGroup;
 
   StreamDeckInterface* m_pCurrentDeck;
 

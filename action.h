@@ -14,21 +14,32 @@ class Action : public QObject {
   Action();
   Action(const Action& other);
 
-  ~Action() { /* m_pDeck does not need to be handled here */ }
+  ~Action() { /* m_pDeck does not need to be handled here */
+  }
 
-  virtual void execute() = 0;
+  virtual void execute() {}
 
-  QString name() { return m_name; }
-  QImage image() { return m_image; }
+  virtual QString name() { return m_name; }
+  virtual QImage image() {
+    if (m_image.isNull()) {
+      return QImage();
+    }
+    return m_image;
+  }
 
-  void setStreamDeck(StreamDeckInterface* deck) {
+  virtual void setStreamDeck(StreamDeckInterface* deck) {
     if (deck == nullptr) {
       return;
     }
     m_pDeck = deck;
   }
 
+  virtual Action& operator=(Action other);
+
   static const int ActionRole;
+
+ protected:
+  void swap(Action& other);
 
  protected:
   QString m_name;

@@ -18,10 +18,8 @@ BrightnessAction::BrightnessAction(const BrightnessAction& other) {
   m_pDeck = other.m_pDeck;
 }
 
-BrightnessAction& BrightnessAction::operator=(const BrightnessAction& other) {
-  BrightnessAction tmp(other);
-
-  swap(tmp);
+BrightnessAction& BrightnessAction::operator=(BrightnessAction other) {
+  swap(other);
   return *this;
 }
 

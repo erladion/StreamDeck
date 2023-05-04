@@ -4,6 +4,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QSlider>
+#include <QSpacerItem>
 #include <QStackedWidget>
 #include <QTreeWidget>
 #include <QVBoxLayout>
@@ -21,6 +22,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   m_pDeckHandler = new DeckHandler();
   m_pConfigHandler = new ConfigurationHandler();
   m_pConfigHandler->loadConfigurations();
+  connect(m_pConfigHandler, &ConfigurationHandler::swapPage, this, &MainWindow::updatePage);
+  connect(m_pConfigHandler, &ConfigurationHandler::updateCurrentPage, this, &MainWindow::updatePage);
+  // connect(m_pConfigHandler, &ConfigurationHandler::pageAdded, this, &MainWindow::updatePage);
 
   // Configuration config;
   // config.name = "StreamDeckTest";
@@ -50,9 +54,6 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 
   QStackedWidget* deckButtons = new QStackedWidget();
 
-  connect(decks, &QComboBox::currentIndexChanged, deckButtons, &QStackedWidget::setCurrentIndex);
-  connect(decks, &QComboBox::currentIndexChanged, this, &MainWindow::deviceChanged);
-
   m_pPageCountLabel = new QLabel("1");
   for (StreamDeckInterface* deck : m_pDeckHandler->devices()) {
     connect(deck, &StreamDeckInterface::buttonPressed, m_pConfigHandler, &ConfigurationHandler::buttonPressed);
@@ -60,7 +61,15 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 
     decks->addItem(deck->Product);
     deckButtons->addWidget(createDeckButtons(deck));
+    m_pConfigHandler->newDevice(deck);
   }
+
+  connect(decks, &QComboBox::currentIndexChanged, deckButtons, &QStackedWidget::setCurrentIndex);
+  connect(decks, &QComboBox::currentIndexChanged, this, &MainWindow::deviceChanged);
+
+  // m_pConfigHandler->deviceChanged(m_pDeckHandler->devices().value(decks->currentIndex()));
+
+  deviceChanged(decks->currentIndex());
 
   QHBoxLayout* pageLayout = new QHBoxLayout();
   QPushButton* deletePageButton = new QPushButton(QIcon(":/navigation/delete.png"), "");
@@ -118,7 +127,7 @@ QWidget* MainWindow::createDeckButtons(StreamDeckInterface* deck) {
   QImage image = QImage(":/icons/arrow.png");
   QWidget* widget = new QWidget();
   QGridLayout* buttonLayout = new QGridLayout();
-  QButtonGroup* buttonGroup = new QButtonGroup();
+  m_pButtonGroup = new QButtonGroup();
   int count = 0;
   for (int row(0); row < deck->getRows(); ++row) {
     for (int column(0); column < deck->getColums(); ++column) {
@@ -128,25 +137,25 @@ QWidget* MainWindow::createDeckButtons(StreamDeckInterface* deck) {
       connect(button, &DeckButton::actionAdded, this, &MainWindow::setAction);
 
       buttonLayout->addWidget(button, row, column);
-      buttonGroup->addButton(button, count++);
+      m_pButtonGroup->addButton(button, count++);
     }
   }
-  QMap<int, QButtonGroup*> map;
-  map.insert(1, buttonGroup);
-  m_buttonGroups.insert(deck, map);
   buttonLayout->setContentsMargins(20, 5, 20, 20);
+
+  buttonLayout->addItem(new QSpacerItem(0, 0), 5, 0);
+  buttonLayout->addItem(new QSpacerItem(0, 0), 0, 3);
   widget->setLayout(buttonLayout);
   return widget;
 }
 
 void MainWindow::deviceChanged(int index) {
-  QList<StreamDeckInterface*> devices = m_pDeckHandler->devices();
-
-  m_pCurrentDeck = devices.value(index);
+  m_pCurrentDeck = m_pDeckHandler->devices().value(index);
   m_pConfigHandler->deviceChanged(m_pCurrentDeck);
 
-  Configuration config = m_pConfigHandler->currentConfiguration();
-  updateLabel(QString("1/%0").arg(config.pageCount));
+  Configuration* config = m_pConfigHandler->currentConfiguration();
+  if (config != nullptr) {
+    updateLabel(QString("1/%0").arg(config->pageCount));
+  }
 }
 
 void MainWindow::updateLabel(const QString& text) {
@@ -192,8 +201,29 @@ void MainWindow::addPage() {
 }
 
 void MainWindow::setAction(int index, Action* action) {
-  qWarning() << __PRETTY_FUNCTION__;
   m_pConfigHandler->setAction(index, action, m_pCurrentDeck);
+}
+
+void MainWindow::updatePageLabel(int currentPage, int pageCount) {
+  m_pPageCountLabel->setText(QString("%0/%1").arg(currentPage, pageCount));
+}
+
+void MainWindow::updatePage(QList<Action*> actions, int currentPage) {
+  if (actions.isEmpty()) {
+    return;
+  }
+
+  updatePageLabel(currentPage, m_pConfigHandler->pageCount());
+
+  for (int i(0); i < m_pCurrentDeck->getColums() * m_pCurrentDeck->getRows(); ++i) {
+    DeckButton* button = qobject_cast<DeckButton*>(m_pButtonGroup->button(i));
+
+    if (actions[i] == nullptr) {
+      return;
+    }
+
+    button->setImage(actions[i]->image());
+  }
 }
 
 void MainWindow::createActionItem(Action* action, QTreeWidgetItem* parent) {

@@ -21,12 +21,14 @@ set(PROJECT_SOURCES
         streamdeckinterface.h
         streamdeck.h streamdeck.cpp
         deckhandler.h deckhandler.cpp
-        configurationhandler.h configurationhandler.cpp
         action.h action.cpp
+        configurationhandler.h configurationhandler.cpp
+        configuration.h configuration.cpp
         deckbutton.h deckbutton.cpp
         imageselectiondialog.h imageselectiondialog.cpp
         brightnessaction.h brightnessaction.cpp
         nextpageaction.h nextpageaction.cpp
+        previouspageaction.h previouspageaction.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

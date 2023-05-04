@@ -12,7 +12,7 @@ class BrightnessAction : public Action {
 
   ~BrightnessAction() {}
 
-  BrightnessAction& operator=(const BrightnessAction& other);
+  BrightnessAction& operator=(BrightnessAction other);
 
   void execute() override;
 

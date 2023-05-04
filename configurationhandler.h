@@ -2,38 +2,11 @@
 #define CONFIGURATIONHANDLER_H
 
 #include "action.h"
+#include "configuration.h"
 #include "streamdeckinterface.h"
 
 #include <QHash>
 #include <QObject>
-
-class QJsonObject;
-
-class Configuration : public QObject {
-  Q_OBJECT
- public:
-  Configuration();
-  Configuration(const Configuration& other);
-
-  Configuration& operator=(const Configuration& other);
-
-  QJsonObject toJson();
-  static Configuration fromJson(QJsonObject obj);
-
-  void addPage();
-  void deletePage(int index);
-
-  void addAction(int buttonIndex, int pageIndex, Action* action);
-
-  QString name;
-  int pageCount;
-  int brightness;
-
- private:
-  void swap(Configuration& other);
-
-  QList<QList<Action*>> m_actions;
-};
 
 class ConfigurationHandler : public QObject {
   Q_OBJECT
@@ -43,8 +16,11 @@ class ConfigurationHandler : public QObject {
   void loadConfigurations();
   void saveConfiguration(Configuration config);
 
+  void newDevice(StreamDeckInterface* device);
   void deviceChanged(StreamDeckInterface* deck);
-  Configuration currentConfiguration() { return m_currentConfiguration; }
+  Configuration* currentConfiguration() { return m_currentConfiguration; }
+
+  int pageCount() { return m_currentConfiguration->pageCount; }
 
   void addPage();
   void deletePage();
@@ -55,18 +31,28 @@ class ConfigurationHandler : public QObject {
 
   void setAction(int buttonIndex, Action* action, StreamDeckInterface* deck);
 
+  void setActions(QList<Action*>);
+
+ signals:
+  void swapPage(QList<Action*>, int);
+  void pageAdded(int, int);
+  void updateCurrentPage(QList<Action*>, int);
+
  public slots:
   void buttonPressed(int buttonIndex);
   void buttonReleased(int buttonIndex);
 
+ private slots:
+  void sendPageUpdate();
+
  private:
   StreamDeckInterface* m_pCurrentDeck;
-  Configuration m_currentConfiguration;
+  Configuration* m_currentConfiguration;
   int m_currentPage;
 
   QList<Configuration> configurations;
 
-  QHash<StreamDeckInterface*, Configuration> m_configurations;
+  QHash<StreamDeckInterface*, Configuration*> m_configurations;
 
   QString m_configPath;
 };

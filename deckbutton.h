@@ -12,6 +12,8 @@ class DeckButton : public QPushButton {
  public:
   DeckButton(int position, QSize buttonSize, QWidget* parent = nullptr);
 
+  void setAction(Action* action);
+
  signals:
   void showImageSelection();
   void actionAdded(int, Action*);
