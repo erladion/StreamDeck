@@ -4,7 +4,12 @@
 #include <QObject>
 #include <QThread>
 
+#ifndef _WIN32
 #include "hidapi/hidapi.h"
+#endif
+#ifdef _WIN32
+#include "hidapi/hidapi/hidapi.h"
+#endif
 
 #include "streamdeckinterface.h"
 
@@ -14,6 +19,10 @@ class StreamDeck;
 
 class StreamDeckThread : public QThread {
   Q_OBJECT
+
+  static const unsigned int MicrosecondsPerSecond;
+  static const int PollRate;
+
  public:
   StreamDeckThread(StreamDeck* deck);
 
@@ -31,6 +40,8 @@ class StreamDeck : public StreamDeckInterface {
   Q_OBJECT
 
   friend StreamDeckThread;
+
+  static const int MaxStringSize;
 
  public:
   StreamDeck(hid_device* device, const QString& serialNumber = QString());

@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 
 #include <QComboBox>
+#include <QFile>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QSlider>
@@ -24,7 +25,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
   m_pConfigHandler->loadConfigurations();
   connect(m_pConfigHandler, &ConfigurationHandler::swapPage, this, &MainWindow::updatePage);
   connect(m_pConfigHandler, &ConfigurationHandler::updateCurrentPage, this, &MainWindow::updatePage);
-  // connect(m_pConfigHandler, &ConfigurationHandler::pageAdded, this, &MainWindow::updatePage);
+  // connect(m_pConfigHandler, &ConfigurationHandler::pageAdded, this,
+  // &MainWindow::updatePage);
 
   // Configuration config;
   // config.name = "StreamDeckTest";
@@ -124,7 +126,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 MainWindow::~MainWindow() {}
 
 QWidget* MainWindow::createDeckButtons(StreamDeckInterface* deck) {
-  QImage image = QImage(":/icons/arrow.png");
+  // QImage image = QImage(":/icons/arrow.png");
   QWidget* widget = new QWidget();
   QGridLayout* buttonLayout = new QGridLayout();
   m_pButtonGroup = new QButtonGroup();
@@ -158,9 +160,7 @@ void MainWindow::deviceChanged(int index) {
   }
 }
 
-void MainWindow::updateLabel(const QString& text) {
-  m_pPageCountLabel->setText(text);
-}
+void MainWindow::updateLabel(const QString& text) { m_pPageCountLabel->setText(text); }
 
 void MainWindow::showImageSelection() {
   DeckButton* button = qobject_cast<DeckButton*>(sender());
@@ -176,37 +176,23 @@ void MainWindow::showImageSelection() {
   }
 }
 
-void MainWindow::adjustBrightness(int value) {
-  m_pConfigHandler->adjustBrightness(value);
-}
+void MainWindow::adjustBrightness(int value) { m_pConfigHandler->adjustBrightness(value); }
 
 void MainWindow::showActionInfo() {
   // TODO: Implement
 }
 
-void MainWindow::deletePage() {
-  m_pConfigHandler->deletePage();
-}
+void MainWindow::deletePage() { m_pConfigHandler->deletePage(); }
 
-void MainWindow::previousPage() {
-  m_pConfigHandler->previousPage();
-}
+void MainWindow::previousPage() { m_pConfigHandler->previousPage(); }
 
-void MainWindow::nextPage() {
-  m_pConfigHandler->nextPage();
-}
+void MainWindow::nextPage() { m_pConfigHandler->nextPage(); }
 
-void MainWindow::addPage() {
-  m_pConfigHandler->addPage();
-}
+void MainWindow::addPage() { m_pConfigHandler->addPage(); }
 
-void MainWindow::setAction(int index, Action* action) {
-  m_pConfigHandler->setAction(index, action, m_pCurrentDeck);
-}
+void MainWindow::setAction(int index, Action* action) { m_pConfigHandler->setAction(index, action, m_pCurrentDeck); }
 
-void MainWindow::updatePageLabel(int currentPage, int pageCount) {
-  m_pPageCountLabel->setText(QString("%0/%1").arg(currentPage, pageCount));
-}
+void MainWindow::updatePageLabel(int currentPage, int pageCount) { m_pPageCountLabel->setText(QString("%0/%1").arg(currentPage, pageCount)); }
 
 void MainWindow::updatePage(QList<Action*> actions, int currentPage) {
   if (actions.isEmpty()) {

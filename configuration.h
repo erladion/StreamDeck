@@ -1,10 +1,10 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
-#include "action.h"
-
 #include <QList>
 #include <QObject>
+
+#include "action.h"
 
 class QJsonObject;
 class ConfigurationHandler;
@@ -13,6 +13,7 @@ class Configuration : public QObject {
   Q_OBJECT
  public:
   Configuration();
+  Configuration(const int deckRows, const int deckColumns);
   Configuration(const Configuration& other);
 
   Configuration& operator=(Configuration other);
@@ -37,6 +38,9 @@ class Configuration : public QObject {
  private:
   void swap(Configuration& other);
 
+  int m_deckRows;
+  int m_deckColumns;
+  int m_deckSize;
   QList<QList<Action*>> m_actions;
 };
 #endif  // CONFIGURATION_H

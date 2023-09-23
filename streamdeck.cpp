@@ -2,18 +2,20 @@
 
 #include <QBuffer>
 #include <QByteArray>
+#include <QDebug>
 #include <QFile>
 #include <QImage>
 #include <QList>
-
-#include <QDebug>
-
 #include <algorithm>
 
-static const int MAX_STR = 255;
-static const int POLL_RATE = 30;
+#ifdef _WIN32
+#include "winsock2.h"
+#endif
 
-static const unsigned int MICROSECONDS_PER_SECOND = 1000000;
+const int StreamDeck::MaxStringSize(255);
+
+const int StreamDeckThread::PollRate(30);
+const unsigned int StreamDeckThread::MicrosecondsPerSecond(1000000);
 
 StreamDeck::StreamDeck(hid_device* device, const QString& serialNumber) : m_device(device) {
   SerialNumber = serialNumber;
@@ -44,11 +46,11 @@ StreamDeck::StreamDeck(hid_device* device, const QString& serialNumber) : m_devi
 
   ButtonStateHeaderSize = 0x4;
 
-  wchar_t wstr[MAX_STR];
-  hid_get_manufacturer_string(m_device, wstr, MAX_STR);
+  wchar_t wstr[MaxStringSize];
+  hid_get_manufacturer_string(m_device, wstr, MaxStringSize);
   Manufacturer = QString::fromWCharArray(wstr);
 
-  hid_get_product_string(m_device, wstr, MAX_STR);
+  hid_get_product_string(m_device, wstr, MaxStringSize);
   Product = QString::fromWCharArray(wstr);
 
   if (!SerialNumber.isNull()) {
@@ -63,10 +65,8 @@ StreamDeck::StreamDeck(hid_device* device, const QString& serialNumber) : m_devi
 
   m_thread = new StreamDeckThread(this);
 
-  connect(m_thread, &StreamDeckThread::buttonPressed, this,
-          [this](int buttonId) { qInfo("Button pressed: %d", buttonId); });
-  connect(m_thread, &StreamDeckThread::buttonReleased, this,
-          [this](int buttonId) { qInfo("Button released: %d", buttonId); });
+  connect(m_thread, &StreamDeckThread::buttonPressed, this, [&](int buttonId) { qInfo("Button pressed: %d", buttonId); });
+  connect(m_thread, &StreamDeckThread::buttonReleased, this, [&](int buttonId) { qInfo("Button released: %d", buttonId); });
 
   connect(m_thread, &StreamDeckThread::buttonPressed, this, &StreamDeck::buttonPressed);
   connect(m_thread, &StreamDeckThread::buttonReleased, this, &StreamDeck::buttonReleased);
@@ -104,7 +104,7 @@ void StreamDeck::setKeyImage(uint8_t keyId, const QImage& image) {
     QByteArray payload;
     payload.append(header);
     payload.append(imageByteArray, actualPayloadSize);
-    imageByteArray.erase(imageByteArray.begin(), imageByteArray.begin() + actualPayloadSize);
+    imageByteArray.erase(imageByteArray.cbegin(), imageByteArray.cbegin() + actualPayloadSize);
 
     if (actualPayloadSize < PayloadSize) {
       QByteArray padding;
@@ -129,7 +129,6 @@ void StreamDeck::setBrightness(double percent) {
   realPercent = std::min(std::max(realPercent, 0), 100);
 
   QByteArray payload(ReportSize, 0x0);
-
   payload[0] = SendFeatureReportId;
   payload[1] = BrightnessCommandId;
   payload[2] = static_cast<uint8_t>(realPercent);
@@ -137,13 +136,10 @@ void StreamDeck::setBrightness(double percent) {
   hid_send_feature_report(m_device, reinterpret_cast<unsigned char*>(payload.data()), ReportSize);
 }
 
-QSize StreamDeck::imageSize() {
-  return QSize(72, 72);
-}
+QSize StreamDeck::imageSize() { return QSize(72, 72); }
 
 void StreamDeck::reset() {
   QByteArray payload(ReportSize, 0x0);
-
   payload[0] = SendFeatureReportId;
   payload[1] = ResetCommandId;
 
@@ -158,8 +154,7 @@ void StreamDeckThread::run() {
   QList<bool> pressState(m_deck->Columns * m_deck->Rows);
   QList<bool> previousPressState(m_deck->Columns * m_deck->Rows);
   while (true) {
-    hid_read(m_device, reinterpret_cast<unsigned char*>(buffer.data()),
-             m_deck->ButtonStateHeaderSize + m_deck->Columns * m_deck->Rows);
+    hid_read(m_device, reinterpret_cast<unsigned char*>(buffer.data()), m_deck->ButtonStateHeaderSize + m_deck->Columns * m_deck->Rows);
     for (int i(0); i < m_deck->Columns * m_deck->Rows; ++i) {
       if (buffer.data()[i + m_deck->ButtonStateHeaderSize] == 1) {
         pressState[i] = true;
@@ -175,7 +170,7 @@ void StreamDeckThread::run() {
 
     struct timeval tv;
     tv.tv_sec = 0;
-    tv.tv_usec = MICROSECONDS_PER_SECOND / POLL_RATE;
+    tv.tv_usec = MicrosecondsPerSecond / PollRate;
     select(0, nullptr, nullptr, nullptr, &tv);
   }
 }

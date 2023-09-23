@@ -1,16 +1,22 @@
 #include "configuration.h"
 
-#include "nextpageaction.h"
-#include "previouspageaction.h"
-
-#include "configurationhandler.h"
-
 #include <QJsonDocument>
 #include <QJsonObject>
 
-Configuration::Configuration() : pageCount(1) {
+#include "configurationhandler.h"
+#include "nextpageaction.h"
+#include "previouspageaction.h"
+
+Configuration::Configuration()
+    : pageCount(0), m_deckSize(0), m_deckRows(0), m_deckColumns(0) {}
+
+Configuration::Configuration(const int deckRows, const int deckColumns)
+    : pageCount(1),
+      m_deckSize(deckRows * deckColumns),
+      m_deckRows(deckRows),
+      m_deckColumns(deckColumns) {
   QList<Action*> actions;
-  for (int i(0); i < 15; ++i) {
+  for (int i(0); i < m_deckSize; ++i) {
     actions.append(new Action());
   }
   m_actions.append(actions);
@@ -21,6 +27,10 @@ Configuration::Configuration(const Configuration& other) {
   name = other.name;
   pageCount = other.pageCount;
   brightness = other.brightness;
+
+  m_deckSize = other.m_deckSize;
+  m_deckRows = other.m_deckRows;
+  m_deckColumns = other.m_deckColumns;
 }
 
 Configuration& Configuration::operator=(Configuration other) {
@@ -32,6 +42,10 @@ void Configuration::swap(Configuration& other) {
   std::swap(name, other.name);
   std::swap(pageCount, other.pageCount);
   std::swap(brightness, other.brightness);
+
+  std::swap(m_deckSize, other.m_deckSize);
+  std::swap(m_deckRows, other.m_deckRows);
+  std::swap(m_deckColumns, other.m_deckColumns);
 }
 
 QJsonObject Configuration::toJson() {
@@ -63,17 +77,17 @@ void Configuration::addPage(ConfigurationHandler* handler) {
   qWarning() << metaObject()->className() << __FUNCTION__;
 
   QList<Action*>& previousPage = m_actions.last();
-  Action* a = previousPage[14];
+  Action* a = previousPage[m_deckSize - 1];
   if (a != nullptr) {
     delete a;
   }
-  previousPage.replace(14, new NextPageAction(handler));
+  previousPage.replace(m_deckSize - 1, new NextPageAction(handler));
 
   QList<Action*> actions;
-  for (int i(0); i < 15; ++i) {
+  for (int i(0); i < m_deckSize; ++i) {
     actions.append(new Action());
   }
-  actions[10] = new PreviousPageAction(handler);
+  actions[m_deckSize - m_deckColumns] = new PreviousPageAction(handler);
 
   m_actions.append(actions);
   pageCount++;

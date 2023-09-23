@@ -1,0 +1,9 @@
+﻿---
+BasedOnStyle: Google
+ColumnLimit: '150'
+IndentWidth: '2'
+PointerAlignment: Left
+TabWidth: '2'
+UseTab: Never
+
+...

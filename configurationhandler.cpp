@@ -10,13 +10,15 @@
 
 ConfigurationHandler::ConfigurationHandler() : m_currentPage(1) {
   m_configPath =
-      QString("%0/.config/%1/configurations/").arg(qEnvironmentVariable("HOME"), QApplication::applicationName());
+      QString("%0/.config/%1/configurations/")
+          .arg(qEnvironmentVariable("HOME"), QApplication::applicationName());
 
-  m_currentConfiguration = nullptr;  // new Configuration();
+  m_currentConfiguration = nullptr;
 }
 
 void ConfigurationHandler::sendPageUpdate() {
-  emit updateCurrentPage(m_currentConfiguration->pageActions(m_currentPage - 1), m_currentPage);
+  emit updateCurrentPage(m_currentConfiguration->pageActions(m_currentPage - 1),
+                         m_currentPage);
 }
 
 void ConfigurationHandler::loadConfigurations() {
@@ -64,13 +66,15 @@ void ConfigurationHandler::saveConfiguration(Configuration config) {
     tStream << bytes;
     file.close();
   } else {
-    qCritical("Failed to open file: %s - %s", qPrintable(m_configPath + QString("%0.config").arg(config.name)),
+    qCritical("Failed to open file: %s - %s",
+              qPrintable(m_configPath + QString("%0.config").arg(config.name)),
               qPrintable(file.errorString()));
   }
 }
 
 void ConfigurationHandler::newDevice(StreamDeckInterface* device) {
-  m_configurations.insert(device, new Configuration());
+  m_configurations.insert(
+      device, new Configuration(device->getRows(), device->getColums()));
 }
 
 void ConfigurationHandler::deviceChanged(StreamDeckInterface* deck) {
@@ -79,17 +83,21 @@ void ConfigurationHandler::deviceChanged(StreamDeckInterface* deck) {
   }
   m_pCurrentDeck = deck;
   m_currentConfiguration = m_configurations.value(m_pCurrentDeck);
-  connect(m_currentConfiguration, &Configuration::pageAdded, this, &ConfigurationHandler::sendPageUpdate);
+  connect(m_currentConfiguration, &Configuration::pageAdded, this,
+          &ConfigurationHandler::sendPageUpdate);
 }
 
 void ConfigurationHandler::buttonPressed(int buttonIndex) {
   qWarning() << __FUNCTION__ << "Button index:" << buttonIndex;
-  m_currentConfiguration->pageActions(m_currentPage - 1).value(buttonIndex)->execute();
+  m_currentConfiguration->pageActions(m_currentPage - 1)
+      .value(buttonIndex)
+      ->execute();
 }
 
 void ConfigurationHandler::buttonReleased(int buttonIndex) {
   qWarning() << __FUNCTION__ << "Button index:" << buttonIndex;
-  // m_currentConfiguration->pageActions(m_currentPage - 1).value(buttonIndex)->execute();
+  // m_currentConfiguration->pageActions(m_currentPage -
+  // 1).value(buttonIndex)->execute();
 }
 
 void ConfigurationHandler::addPage() {
@@ -109,7 +117,8 @@ void ConfigurationHandler::nextPage() {
     m_currentPage = m_currentConfiguration->pageCount;
   }
 
-  QList<Action*> actions = m_currentConfiguration->pageActions(m_currentPage - 1);
+  QList<Action*> actions =
+      m_currentConfiguration->pageActions(m_currentPage - 1);
   emit swapPage(actions, m_currentPage);
   setActions(actions);
 }
@@ -121,7 +130,8 @@ void ConfigurationHandler::previousPage() {
     m_currentPage = 1;
   }
 
-  emit swapPage(m_currentConfiguration->pageActions(m_currentPage - 1), m_currentPage);
+  emit swapPage(m_currentConfiguration->pageActions(m_currentPage - 1),
+                m_currentPage);
   setActions(m_currentConfiguration->pageActions(m_currentPage - 1));
 }
 
@@ -130,7 +140,8 @@ void ConfigurationHandler::adjustBrightness(int value) {
   m_pCurrentDeck->setBrightness(value);
 }
 
-void ConfigurationHandler::setAction(int buttonIndex, Action* action, StreamDeckInterface* deck) {
+void ConfigurationHandler::setAction(int buttonIndex, Action* action,
+                                     StreamDeckInterface* deck) {
   if (action == nullptr) {
     return;
   }

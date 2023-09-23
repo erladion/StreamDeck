@@ -2,19 +2,26 @@
 
 #include "streamdeck.h"
 
+#ifndef _WIN32
 #include "hidapi/hidapi.h"
+#endif
+#ifdef _WIN32
+#include "hidapi/hidapi/hidapi.h"
+#endif
 
 #include <QDebug>
 
 DeckHandler::DeckHandler(QObject* parent) : QObject{parent} {
   // Get all Elgato devicse
-  hid_device_info* devs = hid_enumerate(StreamDeckInterface::VendorId, 0x0);
+  hid_device_info* devices = hid_enumerate(StreamDeckInterface::VendorId, 0x0);
 
-  for (hid_device_info* currentDevice = devs; currentDevice != nullptr; currentDevice = currentDevice->next) {
+  for (hid_device_info* currentDevice = devices; currentDevice != nullptr;
+       currentDevice = currentDevice->next) {
     unsigned short productId = currentDevice->product_id;
     wchar_t* serialNumber = currentDevice->serial_number;
 
-    hid_device* device = hid_open(StreamDeckInterface::VendorId, productId, serialNumber);
+    hid_device* device =
+        hid_open(StreamDeckInterface::VendorId, productId, serialNumber);
     if (!device) {
       printf("Unable to open device\n");
       hid_exit();
@@ -32,5 +39,5 @@ DeckHandler::DeckHandler(QObject* parent) : QObject{parent} {
     }
   }
 
-  hid_free_enumeration(devs);
+  hid_free_enumeration(devices);
 }

@@ -1,12 +1,12 @@
 #ifndef CONFIGURATIONHANDLER_H
 #define CONFIGURATIONHANDLER_H
 
+#include <QHash>
+#include <QObject>
+
 #include "action.h"
 #include "configuration.h"
 #include "streamdeckinterface.h"
-
-#include <QHash>
-#include <QObject>
 
 class ConfigurationHandler : public QObject {
   Q_OBJECT

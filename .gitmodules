@@ -1,0 +1,6 @@
+[submodule "hidapi"]
+	path = hidapi
+	url = https://github.com/libusb/hidapi.git
+[submodule "phantomstyle"]
+	path = phantomstyle
+	url = https://github.com/erladion/phantomstyle.git
