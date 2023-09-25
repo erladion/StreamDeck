@@ -1,5 +1,7 @@
 #include "previouspageaction.h"
 
+#include "configurationhandler.h"
+
 PreviousPageAction::PreviousPageAction(ConfigurationHandler* handler) : Action(), m_pHandler(handler) {
   m_name = QString();
   m_pDeck = nullptr;
@@ -21,9 +23,7 @@ PreviousPageAction& PreviousPageAction::operator=(PreviousPageAction other) {
   return *this;
 }
 
-void PreviousPageAction::execute() {
-  m_pHandler->previousPage();
-}
+void PreviousPageAction::execute() { m_pHandler->previousPage(); }
 
 void PreviousPageAction::swap(PreviousPageAction& other) {
   std::swap(m_name, other.m_name);

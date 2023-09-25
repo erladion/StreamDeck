@@ -10,10 +10,14 @@
 #include <QTreeWidget>
 #include <QVBoxLayout>
 
+#include "action.h"
 #include "brightnessaction.h"
+#include "configuration.h"
+#include "configurationhandler.h"
 #include "deckbutton.h"
 #include "deckhandler.h"
 #include "imageselectiondialog.h"
+#include "streamdeckinterface.h"
 
 const QSize MainWindow::NavigationButtonsSize = QSize(25, 25);
 
@@ -131,11 +135,12 @@ QWidget* MainWindow::createDeckButtons(StreamDeckInterface* deck) {
   QGridLayout* buttonLayout = new QGridLayout();
   m_pButtonGroup = new QButtonGroup();
   int count = 0;
-  for (int row(0); row < deck->getRows(); ++row) {
-    for (int column(0); column < deck->getColums(); ++column) {
+  for (int row(0); row < deck->rows(); ++row) {
+    for (int column(0); column < deck->colums(); ++column) {
       DeckButton* button = new DeckButton(row * 5 + column, deck->imageSize());
       connect(button, &DeckButton::showImageSelection, this, &MainWindow::showImageSelection);
       connect(button, &DeckButton::clicked, this, &MainWindow::showActionInfo);
+      connect(button, &DeckButton::doAction, this, &MainWindow::doAction);
       connect(button, &DeckButton::actionAdded, this, &MainWindow::setAction);
 
       buttonLayout->addWidget(button, row, column);
@@ -190,9 +195,22 @@ void MainWindow::nextPage() { m_pConfigHandler->nextPage(); }
 
 void MainWindow::addPage() { m_pConfigHandler->addPage(); }
 
+void MainWindow::doAction() {
+  if (sender() == nullptr) {
+    return;
+  }
+
+  if (DeckButton* button = qobject_cast<DeckButton*>(sender())) {
+    m_pConfigHandler->buttonPressed(button->position());
+  }
+}
+
 void MainWindow::setAction(int index, Action* action) { m_pConfigHandler->setAction(index, action, m_pCurrentDeck); }
 
-void MainWindow::updatePageLabel(int currentPage, int pageCount) { m_pPageCountLabel->setText(QString("%0/%1").arg(currentPage, pageCount)); }
+void MainWindow::updatePageLabel(int currentPage, int pageCount) {
+  qWarning() << __FUNCTION__ << currentPage << pageCount;
+  m_pPageCountLabel->setText(QString("%0/%1").arg(currentPage).arg(pageCount));
+}
 
 void MainWindow::updatePage(QList<Action*> actions, int currentPage) {
   if (actions.isEmpty()) {
@@ -201,7 +219,7 @@ void MainWindow::updatePage(QList<Action*> actions, int currentPage) {
 
   updatePageLabel(currentPage, m_pConfigHandler->pageCount());
 
-  for (int i(0); i < m_pCurrentDeck->getColums() * m_pCurrentDeck->getRows(); ++i) {
+  for (int i(0); i < m_pCurrentDeck->colums() * m_pCurrentDeck->rows(); ++i) {
     DeckButton* button = qobject_cast<DeckButton*>(m_pButtonGroup->button(i));
 
     if (actions[i] == nullptr) {

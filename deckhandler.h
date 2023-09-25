@@ -2,19 +2,16 @@
 #define DECKHANDLER_H
 
 #include <QObject>
-
 #include <QSet>
 
-#include "streamdeckinterface.h"
+class StreamDeckInterface;
 
 class DeckHandler : public QObject {
   Q_OBJECT
  public:
   explicit DeckHandler(QObject* parent = nullptr);
 
-  QList<StreamDeckInterface*> devices() { return m_devices; }
-
- signals:
+  QList<StreamDeckInterface*> devices() const { return m_devices; }
 
  private:
   QList<StreamDeckInterface*> m_devices;

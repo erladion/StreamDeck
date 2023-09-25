@@ -2,16 +2,16 @@
 
 #include <QAction>
 #include <QContextMenuEvent>
-#include <QMenu>
-#include <QSize>
-
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
+#include <QMenu>
 #include <QMimeData>
+#include <QSize>
 
-DeckButton::DeckButton(int position, QSize buttonSize, QWidget* parent)
-    : QPushButton(parent), m_position(position), m_size(buttonSize) {
+#include "action.h"
+
+DeckButton::DeckButton(int position, QSize buttonSize, QWidget* parent) : QPushButton(parent), m_position(position), m_size(buttonSize) {
   setFixedSize(m_size);
   setIconSize(m_size / 2);
   setAcceptDrops(true);
@@ -19,20 +19,25 @@ DeckButton::DeckButton(int position, QSize buttonSize, QWidget* parent)
 
 void DeckButton::showContextMenu(const QPoint& pos) {
   QMenu* menu = new QMenu;
-  QAction* imageAction = menu->addAction("Set image");
+  QAction* activateAction = menu->addAction(QIcon(":/icons/execute.png"), "Activate");
+  QAction* imageAction = menu->addAction(QIcon(":/icons/image.png"), "Set image");
+  connect(activateAction, &QAction::triggered, this, &DeckButton::doAction);
   connect(imageAction, &QAction::triggered, this, &DeckButton::showImageSelection);
   menu->exec(pos);
 }
 
 void DeckButton::setImage(QImage image) {
   QPixmap p;
-  p.convertFromImage(image);
+  if (image == QImage()) {
+    qWarning() << "Creating transparent icon!";
+    p.fill(Qt::transparent);
+  } else {
+    p.convertFromImage(image);
+  }
   setIcon(QIcon(p));
 }
 
-void DeckButton::setImage(QIcon icon) {
-  setImage(icon.pixmap(m_size).toImage());
-}
+void DeckButton::setImage(QIcon icon) { setImage(icon.pixmap(m_size).toImage()); }
 
 void DeckButton::contextMenuEvent(QContextMenuEvent* event) {
   showContextMenu(event->globalPos());

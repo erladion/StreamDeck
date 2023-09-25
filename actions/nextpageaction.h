@@ -2,7 +2,8 @@
 #define NEXTPAGEACTION_H
 
 #include "action.h"
-#include "configurationhandler.h"
+
+class ConfigurationHandler;
 
 class NextPageAction : public Action {
   Q_OBJECT

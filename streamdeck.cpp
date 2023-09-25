@@ -136,9 +136,9 @@ void StreamDeck::setBrightness(double percent) {
   hid_send_feature_report(m_device, reinterpret_cast<unsigned char*>(payload.data()), ReportSize);
 }
 
-QSize StreamDeck::imageSize() { return QSize(72, 72); }
+QSize StreamDeck::imageSize() const { return QSize(72, 72); }
 
-void StreamDeck::reset() {
+void StreamDeck::reset() const {
   QByteArray payload(ReportSize, 0x0);
   payload[0] = SendFeatureReportId;
   payload[1] = ResetCommandId;

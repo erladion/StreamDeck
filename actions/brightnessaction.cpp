@@ -1,5 +1,7 @@
 #include "brightnessaction.h"
 
+#include "streamdeckinterface.h"
+
 BrightnessAction::BrightnessAction() {
   m_name = QString();
   m_pDeck = nullptr;

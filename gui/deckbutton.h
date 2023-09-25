@@ -1,9 +1,9 @@
 #ifndef DECKBUTTON_H
 #define DECKBUTTON_H
 
-#include "action.h"
-
 #include <QPushButton>
+
+class Action;
 
 class QMenu;
 
@@ -14,8 +14,11 @@ class DeckButton : public QPushButton {
 
   void setAction(Action* action);
 
+  int position() { return m_position; }
+
  signals:
   void showImageSelection();
+  void doAction();
   void actionAdded(int, Action*);
 
  public slots:

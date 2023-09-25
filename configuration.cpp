@@ -3,24 +3,21 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
+#include "action.h"
 #include "configurationhandler.h"
 #include "nextpageaction.h"
 #include "previouspageaction.h"
 
-Configuration::Configuration()
-    : pageCount(0), m_deckSize(0), m_deckRows(0), m_deckColumns(0) {}
+Configuration::Configuration() : pageCount(0), m_deckSize(0), m_deckRows(0), m_deckColumns(0) {}
 
 Configuration::Configuration(const int deckRows, const int deckColumns)
-    : pageCount(1),
-      m_deckSize(deckRows * deckColumns),
-      m_deckRows(deckRows),
-      m_deckColumns(deckColumns) {
+    : pageCount(1), m_deckSize(deckRows * deckColumns), m_deckRows(deckRows), m_deckColumns(deckColumns) {
+  qWarning() << __FUNCTION__;
   QList<Action*> actions;
   for (int i(0); i < m_deckSize; ++i) {
     actions.append(new Action());
   }
-  m_actions.append(actions);
-  qWarning() << __FUNCTION__;
+  m_pages.append(actions);
 }
 
 Configuration::Configuration(const Configuration& other) {
@@ -48,7 +45,7 @@ void Configuration::swap(Configuration& other) {
   std::swap(m_deckColumns, other.m_deckColumns);
 }
 
-QJsonObject Configuration::toJson() {
+QJsonObject Configuration::toJson() const {
   QJsonObject obj;
   obj.insert("name", name);
   obj.insert("pageCount", pageCount);
@@ -68,15 +65,15 @@ Configuration Configuration::fromJson(QJsonObject obj) {
   return config;
 }
 
-QList<Action*> Configuration::pageActions(int index) {
-  QList<Action*> actions = m_actions[index];
+QList<Action*> Configuration::pageActions(int index) const {
+  QList<Action*> actions = m_pages[index];
   return actions;
 }
 
 void Configuration::addPage(ConfigurationHandler* handler) {
   qWarning() << metaObject()->className() << __FUNCTION__;
 
-  QList<Action*>& previousPage = m_actions.last();
+  QList<Action*>& previousPage = m_pages.last();
   Action* a = previousPage[m_deckSize - 1];
   if (a != nullptr) {
     delete a;
@@ -85,27 +82,31 @@ void Configuration::addPage(ConfigurationHandler* handler) {
 
   QList<Action*> actions;
   for (int i(0); i < m_deckSize; ++i) {
-    actions.append(new Action());
+    actions.append(i == m_deckSize - m_deckColumns ? new PreviousPageAction(handler) : new Action());
   }
-  actions[m_deckSize - m_deckColumns] = new PreviousPageAction(handler);
 
-  m_actions.append(actions);
+  m_pages.append(actions);
   pageCount++;
 
-  qWarning() << m_actions.size();
+  qWarning() << m_pages.size();
   qWarning() << actions.size();
-  qWarning() << m_actions[pageCount - 1];
+  qWarning() << m_pages[pageCount - 1];
 
   emit pageAdded();
 }
 
 void Configuration::deletePage(int index) {
-  qWarning() << metaObject()->className() << __FUNCTION__;
-  m_actions.removeAt(index);
+  qWarning() << metaObject()->className() << __FUNCTION__ << index << m_pages.count();
+
+  if (pageCount == 1) {
+    return;
+  }
+
+  m_pages.removeAt(index - 1);
   pageCount--;
 }
 
 void Configuration::addAction(int buttonIndex, int pageIndex, Action* action) {
   qWarning() << metaObject()->className() << __FUNCTION__;
-  m_actions[pageIndex - 1][buttonIndex] = action;
+  m_pages[pageIndex - 1][buttonIndex] = action;
 }

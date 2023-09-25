@@ -8,6 +8,8 @@
         <file alias="placehonder.png">resources/placeholder.png</file>
         <file alias="vector.png">resources/vector.png</file>
         <file alias="world.png">resources/worldwide.png</file>
+        <file alias="image.png">resources/file.png</file>
+        <file alias="execute.png">resources/execute.png</file>
     </qresource>
     <qresource prefix="/navigation">
         <file alias="down-arrow.png">resources/arrow-down.png</file>

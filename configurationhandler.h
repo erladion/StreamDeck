@@ -4,9 +4,9 @@
 #include <QHash>
 #include <QObject>
 
-#include "action.h"
-#include "configuration.h"
-#include "streamdeckinterface.h"
+class Action;
+class Configuration;
+class StreamDeckInterface;
 
 class ConfigurationHandler : public QObject {
   Q_OBJECT
@@ -18,19 +18,18 @@ class ConfigurationHandler : public QObject {
 
   void newDevice(StreamDeckInterface* device);
   void deviceChanged(StreamDeckInterface* deck);
-  Configuration* currentConfiguration() { return m_currentConfiguration; }
+  Configuration* currentConfiguration() const;
 
-  int pageCount() { return m_currentConfiguration->pageCount; }
+  int pageCount() const;
 
   void addPage();
   void deletePage();
   void nextPage();
   void previousPage();
 
-  void adjustBrightness(int value);
+  void adjustBrightness(int value) const;
 
   void setAction(int buttonIndex, Action* action, StreamDeckInterface* deck);
-
   void setActions(QList<Action*>);
 
  signals:

@@ -3,13 +3,11 @@
 
 #include <QButtonGroup>
 #include <QMainWindow>
-
 #include <QStyledItemDelegate>
 
-#include "action.h"
-#include "configurationhandler.h"
-#include "streamdeckinterface.h"
-
+class StreamDeckInterface;
+class ConfigurationHandler;
+class Action;
 class DeckHandler;
 
 class QLabel;
@@ -58,6 +56,7 @@ class MainWindow : public QMainWindow {
   void nextPage();
   void addPage();
 
+  void doAction();
   void setAction(int, Action*);
 
  private slots:

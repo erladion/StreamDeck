@@ -4,7 +4,7 @@
 #include <QImage>
 #include <QObject>
 
-#include "streamdeckinterface.h"
+class StreamDeckInterface;
 
 class QString;
 
@@ -19,20 +19,10 @@ class Action : public QObject {
 
   virtual void execute() {}
 
-  virtual QString name() { return m_name; }
-  virtual QImage image() {
-    if (m_image.isNull()) {
-      return QImage();
-    }
-    return m_image;
-  }
+  virtual QString name();
+  virtual QImage image();
 
-  virtual void setStreamDeck(StreamDeckInterface* deck) {
-    if (deck == nullptr) {
-      return;
-    }
-    m_pDeck = deck;
-  }
+  virtual void setStreamDeck(StreamDeckInterface* deck);
 
   virtual Action& operator=(Action other);
 

@@ -1,5 +1,7 @@
 #include "nextpageaction.h"
 
+#include "configurationhandler.h"
+
 NextPageAction::NextPageAction(ConfigurationHandler* handler) : Action(), m_pHandler(handler) {
   m_name = QString();
   m_pDeck = nullptr;
@@ -21,9 +23,7 @@ NextPageAction& NextPageAction::operator=(NextPageAction other) {
   return *this;
 }
 
-void NextPageAction::execute() {
-  m_pHandler->nextPage();
-}
+void NextPageAction::execute() { m_pHandler->nextPage(); }
 
 void NextPageAction::swap(NextPageAction& other) {
   std::swap(m_name, other.m_name);

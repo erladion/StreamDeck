@@ -2,7 +2,8 @@
 #define PREVIOUSPAGEACTION_H
 
 #include "action.h"
-#include "configurationhandler.h"
+
+class ConfigurationHandler;
 
 class PreviousPageAction : public Action {
   Q_OBJECT

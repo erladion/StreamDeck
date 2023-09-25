@@ -20,12 +20,12 @@ class StreamDeckInterface : public QObject {
   virtual void setKeyImage(uint8_t keyId, const QImage& image) = 0;
 
   virtual void setBrightness(double percent) = 0;
-  virtual void reset() = 0;
+  virtual void reset() const = 0;
 
-  virtual int getRows() = 0;
-  virtual int getColums() = 0;
+  virtual int rows() const = 0;
+  virtual int colums() const = 0;
 
-  virtual QSize imageSize() = 0;
+  virtual QSize imageSize() const = 0;
 
  signals:
   void buttonPressed(int);

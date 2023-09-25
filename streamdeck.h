@@ -49,12 +49,12 @@ class StreamDeck : public StreamDeckInterface {
   virtual void setKeyImage(uint8_t keyId, const QImage& image) override;
 
   virtual void setBrightness(double percent) override;
-  virtual void reset() override;
+  virtual void reset() const override;
 
-  virtual int getRows() override { return Rows; }
-  virtual int getColums() override { return Columns; }
+  virtual int rows() const override { return Rows; }
+  virtual int colums() const override { return Columns; }
 
-  virtual QSize imageSize() override;
+  virtual QSize imageSize() const override;
 
  private:
   StreamDeckThread* m_thread;

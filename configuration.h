@@ -4,7 +4,7 @@
 #include <QList>
 #include <QObject>
 
-#include "action.h"
+class Action;
 
 class QJsonObject;
 class ConfigurationHandler;
@@ -18,10 +18,10 @@ class Configuration : public QObject {
 
   Configuration& operator=(Configuration other);
 
-  QJsonObject toJson();
+  QJsonObject toJson() const;
   static Configuration fromJson(QJsonObject obj);
 
-  QList<Action*> pageActions(int index);
+  QList<Action*> pageActions(int index) const;
 
   void addPage(ConfigurationHandler* handler);
   void deletePage(int index);
@@ -41,6 +41,6 @@ class Configuration : public QObject {
   int m_deckRows;
   int m_deckColumns;
   int m_deckSize;
-  QList<QList<Action*>> m_actions;
+  QList<QList<Action*>> m_pages;
 };
 #endif  // CONFIGURATION_H
